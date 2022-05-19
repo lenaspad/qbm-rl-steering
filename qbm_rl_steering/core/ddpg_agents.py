@@ -277,9 +277,9 @@ class QuantumDDPG:
     def __init__(self, state_space, action_space, gamma, tau_critic,
                  tau_actor, learning_rate_schedule_critic,
                  learning_rate_schedule_actor, grad_clip_actor=np.inf,
-                 grad_clip_critic=np.inf, n_replicas=5, big_gamma=(25., 0.5),
-                 beta=0.5, n_annealing_steps=100, n_meas_for_average=26,
-                 n_rows_qbm=2, n_columns_qbm=3):
+                 grad_clip_critic=np.inf, n_replicas=2, big_gamma=(25., 0.5),
+                 beta=0.5, n_annealing_steps=100, n_meas_for_average=1,
+                 n_rows_qbm=3, n_columns_qbm=3):
         """ Implements quantum DDPG where actor and critic networks are
         represented by quantum Boltzmann machines and classical neural
         networks, respectively.
@@ -410,6 +410,8 @@ class QuantumDDPG:
         # Loop over batch of states, actions, rewards, next_states
         print('Looping over batch of samples, getting current and future Q values in _update_critic ...')
         for jj in np.arange(len(state)):
+            print(f'Sample in batch: {jj + 1}/{len(state)}')
+
             # Recalculate q_value of (sample.state, sample.action) pair
             q_value, spin_configs, visible_nodes = (
                 self.main_critic_net.calculate_q_value(state[jj], action[jj]))

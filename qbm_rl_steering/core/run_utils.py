@@ -2,13 +2,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import tqdm
+import pickle
 
 from qbm_rl_steering.core.ddpg_agents import QuantumDDPG
 
 
 def trainer(env, agent, n_steps, max_steps_per_episode, batch_size,
             action_noise_schedule, epsilon_greedy_schedule, n_anneals_schedule,
-            n_exploration_steps=30, n_episodes_early_stopping=20):
+            n_exploration_steps=30, n_episodes_early_stopping=20, out_path='./'):
     """ Convenience function to run training with DDPG.
     :param env: openAI gym environment instance
     :param agent: ddpg instance (ClassicalDDPG or QuantumDDPG)
@@ -171,8 +172,27 @@ def trainer(env, agent, n_steps, max_steps_per_episode, batch_size,
                     # TRAINING ON RANDOM BATCHES FROM REPLAY BUFFER
                     # (for n_steps_episode)
                     tqdm_desc = f'Learning progress -- Episode {episode}'
-                    for __ in tqdm.trange(n_steps_episode, desc=tqdm_desc):
+                    for stp in tqdm.trange(n_steps_episode, desc=tqdm_desc):
                         agent.update(batch_size, n_total_steps_training)
+
+                        # Save agent, buffer, and training log after every training step
+                        print(f'SAVING EVERYTHING: Ep {episode}, stp {stp}')
+                        weights = {'main_critic': {'w_vh': agent.main_critic_net.w_vh, 'w_hh': agent.main_critic_net.w_hh},
+                                   'target_critic': {'w_vh': agent.target_critic_net.w_vh, 'w_hh': agent.target_critic_net.w_hh}}
+                        with open(out_path + f'/critic_weights_ep{episode}_stp{stp}.pkl', 'wb') as fid:
+                            pickle.dump(weights, fid)
+
+                        weights = {'main_actor': agent.main_actor_net.get_weights(),
+                                   'target_actor': agent.target_actor_net.get_weights()}
+                        with open(out_path + f'/actor_weights_ep{episode}_stp{stp}.pkl', 'wb') as fid:
+                            pickle.dump(weights, fid)
+
+                        with open(out_path + f'/episode_log_ep{episode}_stp{stp}.pkl', 'wb') as fid:
+                            pickle.dump(episode_log, fid)
+
+                        with open(out_path + f'/replay_buffer_ep{episode}_stp{stp}.pkl', 'wb') as fid:
+                            pickle.dump(agent.replay_buffer, fid)
+
                 break
 
             state = next_state

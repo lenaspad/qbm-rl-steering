@@ -10,7 +10,7 @@ except ImportError:
 
 class QPU:
     def __init__(self, big_gamma: Tuple[float, float], beta: float,
-                 n_replicas: int, n_nodes: int = 16, qfunc_it: int = 0) -> None:
+                 n_replicas: int, n_nodes: int = 72, qfunc_it: int = 0) -> None:
         """
         Initialize a hardware quantum annealer (QA) that runs on the DWAVE
         system. Note that we do not have much control over the annealing
@@ -88,8 +88,8 @@ class QPU:
         # print(f"spin_configurations: {spin_configurations}")
 
         self.n_calls += 1
-        print(f"{self.qfunc_it}, N_CALLS: {self.n_calls}")
-        print(f"{self.qfunc_it}, N_READS: {num_reads}")
+        # print(f"{self.qfunc_it}, N_CALLS: {self.n_calls}")
+        # print(f"{self.qfunc_it}, N_READS: {num_reads}")
 
         # Convert to np array and flip all the 0s to -1s
         spin_configurations = np.array([

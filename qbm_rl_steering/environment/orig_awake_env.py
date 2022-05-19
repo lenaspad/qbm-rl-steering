@@ -15,7 +15,7 @@ from qbm_rl_steering.environment.utils import twissReader
 
 class e_trajectory_simENV(gym.Env):
 
-    def __init__(self, MAX_TIME=50, **kwargs):
+    def __init__(self, MAX_TIME=30, **kwargs):
         self.current_action = None
         self.initial_conditions = []
         self.__version__ = "0.0.1"
@@ -81,7 +81,7 @@ class e_trajectory_simENV(gym.Env):
             self.state_scale = 100. / 1.7  # Also works, and is what real machine env. is using
         self.kicks_0 = np.zeros(len(self.correctorsH.elements))
 
-        self.threshold = -0.0016*self.state_scale * self.reward_scale  #corresponds to what exactly?
+        self.threshold = -0.002*self.state_scale * self.reward_scale  #corresponds to what exactly?
 
     def step(self, action):
 

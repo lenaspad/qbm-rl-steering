@@ -10,56 +10,29 @@ import matplotlib
 
 params = {
     'quantum_ddpg': True,  # False
-    'n_steps': 320,  #      600
-    'env/max_steps_per_episode': 16,  # 20,
+    'n_steps': 227,  #      600
+    'env/max_steps_per_episode': 8,  # 20,
     'env/required_steps_above_reward_threshold': 1,
-    'trainer/batch_size': 16,  # 32
-    'trainer/n_exploration_steps': 300,  # 150    400: works well, too...  , 500,  # 100,
+    'trainer/batch_size': 1,
+    'trainer/n_exploration_steps': 200,  # 150    400: works well, too...  , 500,  # 100,
     'trainer/n_episodes_early_stopping': 20000,
-    'agent/gamma': 0.83,
-    'agent/tau_critic': 0.0028,  # 0.001,
-    'agent/tau_actor': 0.00013,  # 0.001,
-    'lr_critic/init': 0.0002,  # 1e-3
+    'agent/gamma': 0.97,
+    'agent/tau_critic': 0.00013,  # 0.001,
+    'agent/tau_actor': 0.0005,  # 0.001,
+    'lr_critic/init': 0.00025,  # 1e-3
     'lr_critic/decay_factor': 1.,
-    'lr_actor/init': 0.0015,
+    'lr_actor/init': 0.00032,
     'lr_actor/decay_factor': 1.,
-    'lr/final': 0.0001,  # 5e-5,
-    'action_noise/init': 0.4,  # 0.2,
+    'lr/final': 5e-5,  # 5e-5,
+    'action_noise/init': 0.3,  # 0.2,
     'action_noise/final': 0.,
-    'epsilon_greedy/init': 0.55,  # 0.1
+    'epsilon_greedy/init': 0.5,  # 0.1
     'epsilon_greedy/final': 0.,
     'anneals/n_pieces': 2,
-    'anneals/init': 10,
-    'anneals/final': 10,
+    'anneals/init': 1,
+    'anneals/final': 1,
 }
 
-"""
-params = {
-  'quantum_ddpg': False,  # False
-  'n_steps': 1000,
-  'env/n_dims': 10,
-  'env/max_steps_per_episode': 50,  # 20,
-  'env/required_steps_above_reward_threshold': 1,
-  'trainer/batch_size': 32,  # 128,
-  'trainer/n_exploration_steps': 150,  # 200,
-  'trainer/n_episodes_early_stopping': 20,
-  'agent/gamma': 0.99,
-  'agent/tau_critic': 0.001,  # 0.0008,
-  'agent/tau_actor': 0.001,  # 0.0008,
-  'lr_critic/init': 1e-3,
-  'lr_critic/decay_factor': 1.,
-  'lr_actor/init': 1e-3,
-  'lr_actor/decay_factor': 1.,
-  'lr/final': 5e-5,
-  'action_noise/init': 0.2,
-  'action_noise/final': 0.,
-  'epsilon_greedy/init': 0.,
-  'epsilon_greedy/final': 0.,
-  'anneals/n_pieces': 2,
-  'anneals/init': 1,
-  'anneals/final': 2,
-}
-"""
 
 # process_id = None
 from tensorflow.keras.optimizers.schedules import PolynomialDecay, PiecewiseConstantDecay
@@ -95,7 +68,6 @@ if params['quantum_ddpg']:
                           gamma=params['agent/gamma'],
                           tau_critic=params['agent/tau_critic'],
                           tau_actor=params['agent/tau_actor'],
-                          
                           )
 else:
     agentMy = ClassicalDDPG(state_space=env.observation_space,
@@ -126,7 +98,7 @@ y_transition = [int(n) for n in np.linspace(params['anneals/init'],
                                             params['anneals/n_pieces'])]
 n_anneals_schedule = PiecewiseConstantDecay(t_transition, y_transition)
 
-# PREPARE OUTPUT FOLDER
+# PREPARE OUTPUT FOLDERs
 date_time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 out_path = './runs/indiv/' + date_time_now
 #if process_id is not None:
@@ -147,9 +119,9 @@ episode_log = trainer(
     max_steps_per_episode=params['env/max_steps_per_episode'],
     batch_size=params['trainer/batch_size'],
     n_exploration_steps=params['trainer/n_exploration_steps'],
-    n_episodes_early_stopping=params['trainer/n_episodes_early_stopping']
+    n_episodes_early_stopping=params['trainer/n_episodes_early_stopping'],
+    out_path=out_path
 )
-
 # import matplotlib.pyplot as plt
 # plt.figure()
 # plt.plot(agentMy.losses_log['Q'], c='tab:blue')
@@ -157,7 +129,7 @@ episode_log = trainer(
 # plt.ylabel('Q loss')
 # plt.tight_layout()
 # plt.show()
-#
+# 
 # plt.figure()
 # plt.plot(agentMy.losses_log['Mu'], c='r')
 # plt.show()
@@ -222,14 +194,14 @@ with open(out_path + '/actor_weights.pkl', 'wb') as fid:
 #     required_steps_above_reward_threshold=
 #     params['env/required_steps_above_reward_threshold'])
 env = e_trajectory_simENV()
-
 eval_log_scan = evaluator(env, agentMy, n_episodes=100, reward_scan=False)  # reward_scan=True
 
-try:
-    df_eval_log = pd.DataFrame({'rewards': eval_log_scan})
-except ValueError:
-    print('Issue creating eval df ... probably all evaluations used '
-          'same number of steps')
+# try:
+#     df_eval_log = pd.DataFrame({'rewards': eval_log_scan})
+# except ValueError:
+#     print('Issue creating eval df ... probably all evaluations used '
+#           'same number of steps')
+np.save(out_path + '/eval_log_scan.npy', eval_log_scan)
 
 # n_stp = eval_log_scan.shape[1]
 # res_dict = {}
@@ -238,24 +210,6 @@ except ValueError:
 # df_eval_log = pd.DataFrame(res_dict)
 #
 # df_eval_log.to_csv(out_path + '/eval_log_scan')
-plot_evaluation_log(env, params['env/max_steps_per_episode'],
-                    eval_log_scan, type='random', apply_scaling=True, save_path=out_path)
-
-"""
-# EVALUATE AGENT FROM MIN. REWARD STATE. TAKES MULTIPLE STEPS
-done = False
-state = env.reset(init_specific_reward_state=target_init_rewards[0])
-print('Init min. reward state', state)
-print('Init reward', env.calculate_reward(state / env.state_scale))
-ctr = 0
-while not done:
-    act = agent.get_proposed_action(state, 0.)
-    print(f'\nSTEP: {ctr}')
-    print(f'Env. kick_angles: {env.kick_angles}')
-    print(f'Proposed action: {act/env.action_scale}')
-    state, reward, done, _ = env.step(act)
-    print(f'New state: {state}')
-    print(f'Reward: {reward}')
-    print(f'Done: {done}')
-    ctr += 1
-"""
+plot_evaluation_log(
+    env, env.MAX_TIME+1, eval_log_scan, type='random', apply_scaling=True,
+    save_path=out_path)
