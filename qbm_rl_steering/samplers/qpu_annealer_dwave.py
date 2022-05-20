@@ -31,7 +31,7 @@ class QPU:
         self.qfunc_it = qfunc_it
 
         # D-WAVE QA
-        sampler = DWaveSampler() 
+        sampler = DWaveSampler(failover=True, retry_interval=10, solver='Advantage_system6.1') 
         print("QPU {} was selected.".format(sampler.solver.name))
         self.annealer = EmbeddingComposite(sampler)
 

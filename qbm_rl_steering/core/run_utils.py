@@ -32,7 +32,7 @@ def trainer(env, agent, n_steps, max_steps_per_episode, batch_size,
         'n_random_steps': [], 'max_steps_above_reward_threshold': []
     }
 
-    n_total_steps_training = 0
+    n_total_steps_training = 0 
     early_stopping_counter = 0
     k_moving_avg = 30
 
@@ -71,7 +71,7 @@ def trainer(env, agent, n_steps, max_steps_per_episode, batch_size,
 
         # Episode loop
         epsilon = epsilon_greedy_schedule(n_total_steps_training).numpy()
-
+        
         # Action noise decay
         action_noise = action_noise_schedule(n_total_steps_training).numpy()
 
@@ -187,10 +187,10 @@ def trainer(env, agent, n_steps, max_steps_per_episode, batch_size,
                         with open(out_path + f'/actor_weights_ep{episode}_stp{stp}.pkl', 'wb') as fid:
                             pickle.dump(weights, fid)
 
-                        with open(out_path + f'/episode_log_ep{episode}_stp{stp}.pkl', 'wb') as fid:
+                        with open(out_path + f'/episode_log.pkl', 'wb') as fid:
                             pickle.dump(episode_log, fid)
 
-                        with open(out_path + f'/replay_buffer_ep{episode}_stp{stp}.pkl', 'wb') as fid:
+                        with open(out_path + f'/replay_buffer.pkl', 'wb') as fid:
                             pickle.dump(agent.replay_buffer, fid)
 
                 break

@@ -436,7 +436,9 @@ class QFunction(object):
         for i in range(len(states)):
             # print('calc q val on batch, states[i]', states[i])
             # print('calc q val on batch, actions[i]', actions[i])
-            print(f'Sample in batch: {i + 1}/{len(states)}')
+            if i % 4 == 0:
+                print(f'Sample in batch: {i + 1}/{len(states)}')
+
             if calc_derivative:
                 q, sc, vn, grad_s, grad_a = self.calculate_q_value(
                     states[i], actions[i], calc_derivative=calc_derivative)

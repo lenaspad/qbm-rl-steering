@@ -410,7 +410,8 @@ class QuantumDDPG:
         # Loop over batch of states, actions, rewards, next_states
         print('Looping over batch of samples, getting current and future Q values in _update_critic ...')
         for jj in np.arange(len(state)):
-            print(f'Sample in batch: {jj + 1}/{len(state)}')
+            if jj % 4 == 0:
+                print(f'Sample in batch: {jj + 1}/{len(state)}')
 
             # Recalculate q_value of (sample.state, sample.action) pair
             q_value, spin_configs, visible_nodes = (
